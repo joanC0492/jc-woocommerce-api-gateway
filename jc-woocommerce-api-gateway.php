@@ -99,17 +99,20 @@ function aster_import_products()
     }
 
     try {
+      // Arreglo de datos para el producto
       $data = [
         'name' => $producto['name'],
         'type' => $producto['type'],
-        'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : '',
+        // 'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : '',
+        'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : null,
         'description' => $producto['description'],
         'sku' => $producto['sku'],
         'stock_quantity' => $producto['stock_quantity'],
         'manage_stock' => true,
         'images' => $producto['images'],
-        'categories' => $producto['categories'] ?? [],
+        'categories' => $producto['categories'] ?? [], // Añadir categorías si existen
         'attributes' => $producto['attributes'] ?? [], // Añadir atributos si existen
+        'default_attributes' => $producto['default_attributes'] ?? [], // Añadir atributos por defecto si existen
       ];
 
       // Buscamos el producto por SKU
@@ -117,7 +120,7 @@ function aster_import_products()
       // Lo convertimos en un array
       $existing_products = json_decode(json_encode($existing_products), true);
 
-      // Si no es falsy
+      // Si es Truthy, entonces el producto ya existe
       if (!empty($existing_products)) {
         // ACTUALIZAR PRODUCTO
         $product_id = $existing_products[0]['id']; // Obtenemos el ID del producto existente
@@ -133,23 +136,35 @@ function aster_import_products()
         echo '<div class="notice notice-success"><p>' . sprintf(__('Producto importado: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
       }
 
-      // Si el producto es variable
+      // Crear variaciones si el producto es variable
+      // Verificamos si el producto es variable
       $is_variable = $producto['type'] === 'variable';
-      // Verificamos si default_attributes viene en la clave del array && y que sea array
-      $has_default_attributes = isset($producto['default_attributes']) && is_array($producto['default_attributes']);
-
-      if ($is_variable && $has_default_attributes) {
-        // Agregar variaciones
-        foreach ($producto['default_attributes'] as $variation) {
+      // Verificamos si variations viene en la clave del array && es un array
+      $has_variations = isset($producto['variations']) && is_array($producto['variations']) && !empty($producto['variations']);
+      if ($is_variable && $has_variations) {
+        foreach ($producto['variations'] as $variation) {
           $variation_data = [
-            'regular_price' => $producto['regular_price'],
-            'attributes' => [$variation],
-            'stock_quantity' => $producto['stock_quantity'],
-            'manage_stock' => true,
+            'regular_price' => $variation['regular_price'] ?? '',
+            'image' => $variation['image'] ?? [],
+            'attributes' => $variation['attributes'] ?? []
           ];
-          $woocommerce->post("products/$product_id/variations", $variation_data);
+
+          try {
+            $woocommerce->post("products/$product_id/variations", $variation_data);
+            echo '<div class="notice notice-success"><p>' . sprintf(
+              __('-- Variación creada para el producto "%s": %s', 'jc-woocommerce-api'),
+              $producto['name'] ?? 'Sin nombre',
+              json_encode($variation['attributes'])
+            ) . '</p></div>';
+          } catch (Exception $e) {
+            echo '<div class="notice notice-error"><p>' . sprintf(
+              __('Error al crear la variación del producto "%s": %s', 'jc-woocommerce-api'),
+              $producto['name'] ?? 'Sin nombre',
+              $e->getMessage()
+            ) . '</p></div>';
+          }
+
         }
-        echo '<div class="notice notice-success"><p>' . sprintf(__('Variaciones creadas para el producto: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
       }
     } catch (Exception $e) {
       echo '<div class="notice notice-error"><p>' . sprintf(__('Error al importar el producto: %s', 'jc-woocommerce-api'), $e->getMessage()) . '</p></div>';
