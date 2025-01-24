@@ -78,17 +78,17 @@ function aster_import_products()
 
   foreach ($productos as $producto) {
     // Verificamos si el producto está activo
-    $is_active = $producto['status'] === 'active';
+    // $is_active = $producto['status'] === 'active';
     // Verificamos si el SKU viene en la clave del array && no está vacío
     $has_sku = isset($producto['sku']) && !empty($producto['sku']);
 
-    if (!$is_active) {
-      echo '<div class="notice notice-warning"><p>' . sprintf(
-        __('Producto omitido (%s): El producto no está activo.', 'jc-woocommerce-api'),
-        $producto['name'] ?? 'Sin nombre'
-      ) . '</p></div>';
-      continue;
-    }
+    // if (!$is_active) {
+    //   echo '<div class="notice notice-warning"><p>' . sprintf(
+    //     __('Producto omitido (%s): El producto no está activo.', 'jc-woocommerce-api'),
+    //     $producto['name'] ?? 'Sin nombre'
+    //   ) . '</p></div>';
+    //   continue;
+    // }
 
     if (!$has_sku) {
       echo '<div class="notice notice-warning"><p>' . sprintf(
@@ -98,21 +98,28 @@ function aster_import_products()
       continue;
     }
 
+    // VALIDANDO CAMPOS
+    // El precio debe venir en la clave del array y ser numerico    
+    $has_regular_price = isset($producto['regular_price']) && is_numeric($producto['regular_price']);
+    // La cantidad en stock debe venir en la clave del array y ser numerico
+    $has_stock_quantity = isset($producto['stock_quantity']) && is_numeric($producto['stock_quantity']);
     try {
       // Arreglo de datos para el producto
       $data = [
-        'name' => $producto['name'],
-        'type' => $producto['type'],
+        'name' => $producto['name'] ?? "New Product - {$producto['sku']}",
+        'type' => $producto['type'] ?? 'simple',
         // 'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : '',
-        'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : null,
-        'description' => $producto['description'],
+        // 'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : null,
+        'regular_price' => $producto['type'] === 'simple' && $has_regular_price ? $producto['regular_price'] : '',
+        'description' => $producto['description'] ?? '',
         'sku' => $producto['sku'],
-        'stock_quantity' => $producto['stock_quantity'],
+        'stock_quantity' => $has_stock_quantity ? $producto['stock_quantity'] : 0,
         'manage_stock' => true,
-        'images' => $producto['images'],
+        'images' => $producto['images'] ?? [], // Añadir imágenes si existen
         'categories' => $producto['categories'] ?? [], // Añadir categorías si existen
         'attributes' => $producto['attributes'] ?? [], // Añadir atributos si existen
         'default_attributes' => $producto['default_attributes'] ?? [], // Añadir atributos por defecto si existen
+        'status' => $producto['status'] ?? 'draft', // Agregar estado
       ];
 
       // Buscamos el producto por SKU
