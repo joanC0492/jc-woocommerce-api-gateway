@@ -76,19 +76,11 @@ function aster_import_products()
     return;
   }
 
+  // Array para rastrear los SKU procesados
+  $processed = [];
   foreach ($productos as $producto) {
-    // Verificamos si el producto está activo
-    // $is_active = $producto['status'] === 'active';
     // Verificamos si el SKU viene en la clave del array && no está vacío
     $has_sku = isset($producto['sku']) && !empty($producto['sku']);
-
-    // if (!$is_active) {
-    //   echo '<div class="notice notice-warning"><p>' . sprintf(
-    //     __('Producto omitido (%s): El producto no está activo.', 'jc-woocommerce-api'),
-    //     $producto['name'] ?? 'Sin nombre'
-    //   ) . '</p></div>';
-    //   continue;
-    // }
 
     if (!$has_sku) {
       echo '<div class="notice notice-warning"><p>' . sprintf(
@@ -98,18 +90,31 @@ function aster_import_products()
       continue;
     }
 
+    $sku = $producto['sku'];
+    // Verificar si el SKU ya fue procesado
+    if (in_array($sku, $processed)) {
+      echo '<div class="notice notice-warning"><p>' . sprintf(
+        __('Producto omitido (%s): El SKU "%s" ya fue procesado en este lote.', 'jc-woocommerce-api'),
+        $producto['name'] ?? 'Sin nombre',
+        $sku
+      ) . '</p></div>';
+      continue;
+    }
+
+    // Agregar el SKU al arreglo de procesados si es válido
+    $processed[] = $sku;
+
     // VALIDANDO CAMPOS
     // El precio debe venir en la clave del array y ser numerico    
     $has_regular_price = isset($producto['regular_price']) && is_numeric($producto['regular_price']);
     // La cantidad en stock debe venir en la clave del array y ser numerico
     $has_stock_quantity = isset($producto['stock_quantity']) && is_numeric($producto['stock_quantity']);
+
     try {
       // Arreglo de datos para el producto
       $data = [
         'name' => $producto['name'] ?? "New Product - {$producto['sku']}",
         'type' => $producto['type'] ?? 'simple',
-        // 'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : '',
-        // 'regular_price' => $producto['type'] === 'simple' ? $producto['regular_price'] : null,
         'regular_price' => $producto['type'] === 'simple' && $has_regular_price ? $producto['regular_price'] : '',
         'description' => $producto['description'] ?? '',
         'sku' => $producto['sku'],
@@ -179,4 +184,10 @@ function aster_import_products()
   }
 
   echo '<div class="notice notice-success"><p>' . __('Importación completada.', 'jc-woocommerce-api') . '</p></div>';
+}
+
+
+function process_product_batch()
+{
+  
 }
