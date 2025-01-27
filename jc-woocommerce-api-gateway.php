@@ -161,15 +161,21 @@ function prepare_product_data($producto)
 
 function handle_product_images($images)
 {
-  // Si no hay imágenes, retornar un array vacío
-  $image_ids = [];
 
   // Verificar si las imágenes son un array y no está vacío
   if (!is_array($images) || empty($images))
-    return $image_ids;
+    return [];
+
+  // Si no hay imágenes, retornar un array vacío
+  $image_ids = [];
 
   // Reccorrer las imagenes
   foreach ($images as $image) {
+    // Si no viene la clave src || la clave src no es una URL válida
+    if (!isset($image['src']) || !filter_var($image['src'], FILTER_VALIDATE_URL))
+      continue;
+
+    // Obtener la URL de la imagen
     $image_url = $image['src'];
 
     // Verificar si la imagen ya existe en WordPress
@@ -326,13 +332,6 @@ function process_variations($woocommerce, $product_id, $producto)
   // Verificamos si variations viene en la clave del array && es un array
   if ($producto['type'] === 'variable' && isset($producto['variations']) && is_array($producto['variations'])) {
     foreach ($producto['variations'] as $variation) {
-
-      // Procesamos la imagen de la variación (si existe)
-      // if (isset($variation['image']['src'])) {
-      //   $variation['image']['id'] = handle_product_images([$variation['image']])[0] ?? null;
-      // }
-
-
       // Preparamos los datos de la variación
       $variation_data = prepare_variation_data($variation);
       try {
@@ -357,7 +356,9 @@ function prepare_variation_data($variation)
 {
   return [
     'regular_price' => $variation['regular_price'] ?? '',
-    'image' => $variation['image'] ?? [],
+    // 'image' => $variation['image'] ?? [],
+    // 'image' => isset($variation['image']['id']) ? ['id' => $variation['image']['id']] : [],
+    'image' => handle_product_images([$variation['image']])[0] ?? [],
     'attributes' => $variation['attributes'] ?? [],
   ];
 }
