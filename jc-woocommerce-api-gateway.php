@@ -142,21 +142,31 @@ function prepare_product_data($producto)
   // La cantidad en stock debe venir en la clave del array y ser numerico
   $has_stock_quantity = isset($producto['stock_quantity']) && is_numeric($producto['stock_quantity']);
 
-  return [
+
+  // echo $has_stock_quantity ? "true" : "false";
+  // echo "<br>";
+
+  $data = [
     'name' => $producto['name'] ?? "New Product - {$producto['sku']}",
     'type' => $producto['type'] ?? 'simple',
     'regular_price' => $producto['type'] === 'simple' && $has_regular_price ? $producto['regular_price'] : '',
     'description' => $producto['description'] ?? '',
     'sku' => $producto['sku'],
-    'stock_quantity' => $has_stock_quantity ? $producto['stock_quantity'] : 0,
-    'manage_stock' => true,
-    // 'images' => $producto['images'] ?? [],  // Añadir imágenes si existen    
+    'stock_quantity' => $has_stock_quantity ? $producto['stock_quantity'] : null,
+    // true: woo controla el stock, false: no controla el stock
+    'manage_stock' => $has_stock_quantity ? true : false,
     'images' => handle_product_images($producto['images']),  // Añadir imágenes si existen
     'categories' => $producto['categories'] ?? [], // Añadir categorías si existen
     'attributes' => $producto['attributes'] ?? [], // Añadir atributos si existen
     'default_attributes' => $producto['default_attributes'] ?? [], // Añadir atributos por defecto si existen
     'status' => $producto['status'] ?? 'draft', // Agregar estado
+    'catalog_visibility' => $producto['catalog_visibility'] ?? "visible", // Agregar visibilidad
+    // Agregar estado de stock "hay existencias" "sin existencias"
+    // El manage_stock debe ser false para que esto funcione
+    // Si no le mando sotck_quantity, entonces el stock_status es "instock" por defecto
+    'stock_status' => $producto['stock_status'] ?? 'instock',
   ];
+  return $data;
 }
 
 function handle_product_images($images)
@@ -331,16 +341,49 @@ function process_variations($woocommerce, $product_id, $producto)
   // Verificamos si el producto es variable
   // Verificamos si variations viene en la clave del array && es un array
   if ($producto['type'] === 'variable' && isset($producto['variations']) && is_array($producto['variations'])) {
+
+    // Obtener variaciones existentes del producto
+    // Array de stdClass Object || de no tener un array vacio
+    $existing_variations = $woocommerce->get("products/$product_id/variations");
+    echo "<pre>";
+    print_r($existing_variations);
+    echo "</pre>";
     foreach ($producto['variations'] as $variation) {
       // Preparamos los datos de la variación
       $variation_data = prepare_variation_data($variation);
+
+
+      // Verificar si la variación ya existe
+      $existing_variation_id = null;
+      // Recorremos las variaciones existentes del producto
+      foreach ($existing_variations as $existing_variation) {
+        // Comparamos las variaciones
+        if (compare_variations($existing_variation, $variation_data)) {
+          // Obtenemos el id de la variación existente o repetida
+          $existing_variation_id = $existing_variation->id;
+          break;
+        }
+      }
+
       try {
-        $woocommerce->post("products/$product_id/variations", $variation_data);
-        echo '<div class="notice notice-success"><p>' . sprintf(
-          __('-- Variación creada para el producto "%s": %s', 'jc-woocommerce-api'),
-          $producto['name'] ?? 'Sin nombre',
-          json_encode($variation['attributes'])
-        ) . '</p></div>';
+        // si es distinto de null, entonces la variación ya existe
+        if ($existing_variation_id) {
+          // ACTUALIZAR VARIACIÓN
+          $woocommerce->put("products/$product_id/variations/$existing_variation_id", $variation_data);
+          echo '<div class="notice notice-info"><p>' . sprintf(
+            __('-- Variación actualizada para el producto "%s": %s', 'jc-woocommerce-api'),
+            $producto['name'] ?? 'Sin nombre',
+            json_encode($variation['attributes'])
+          ) . '</p></div>';
+        } else {
+          // CREAR VARIACIÓN 
+          $woocommerce->post("products/$product_id/variations", $variation_data);
+          echo '<div class="notice notice-success"><p>' . sprintf(
+            __('-- Nueva variación creada para el producto "%s": %s', 'jc-woocommerce-api'),
+            $producto['name'] ?? 'Sin nombre',
+            json_encode($variation['attributes'])
+          ) . '</p></div>';
+        }
       } catch (Exception $e) {
         echo '<div class="notice notice-error"><p>' . sprintf(
           __('Error al crear la variación del producto "%s": %s', 'jc-woocommerce-api'),
@@ -354,14 +397,35 @@ function process_variations($woocommerce, $product_id, $producto)
 
 function prepare_variation_data($variation)
 {
+
+  $has_stock_quantity = isset($variation['stock_quantity']) && is_numeric($variation['stock_quantity']);
+
   return [
     'regular_price' => $variation['regular_price'] ?? '',
-    // 'image' => $variation['image'] ?? [],
-    // 'image' => isset($variation['image']['id']) ? ['id' => $variation['image']['id']] : [],
     'image' => handle_product_images([$variation['image']])[0] ?? [],
     'attributes' => $variation['attributes'] ?? [],
+    // 
+    'stock_quantity' => $has_stock_quantity ? $variation['stock_quantity'] : null,
+    'manage_stock' => $has_stock_quantity ? true : false,
+    'stock_status' => $variation['stock_status'] ?? 'instock',
   ];
 }
+
+function compare_variations($existing_variation, $new_variation)
+{
+  if (!isset($existing_variation->attributes) || !isset($new_variation['attributes'])) {
+    return false;
+  }
+
+  // Convertir los atributos de las variaciones en arrays asociativos
+  // Si en el JSON Se cambia la manera de enviar datos, esto tambien debe cambiar
+  $existing_attributes = array_column($existing_variation->attributes, 'option', 'name');
+  $new_attributes = array_column($new_variation['attributes'], 'option', 'name');
+
+  // Comparar los atributos de las variaciones
+  return $existing_attributes == $new_attributes;
+}
+
 
 function create_or_update_product($woocommerce, $data, $producto)
 {
