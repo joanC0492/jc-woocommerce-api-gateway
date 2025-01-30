@@ -1,0 +1,239 @@
+[
+  {
+    "id": 1,
+    "name": "Camiseta Deportiva",
+    "description": "Camiseta de poliéster ideal para entrenamientos.",
+    "regular_price": "55.99",
+    "stock_quantity": 110,
+    "type": "simple",
+    "sku": "SKU-0001",
+    "categories": [
+      {
+        "id": 412
+      }
+    ],
+    "images": [
+      {
+        "src": "https://texsamex.pe/wp-content/uploads/2021/11/92.png"
+      }
+    ],
+    "status": "publish"
+  },
+  {
+    "id": 2,
+    "name": "Zapatos Running",
+    "description": "Zapatos ligeros y cómodos para correr largas distancias.",
+    "regular_price": "89.50",
+    "stock_quantity": 50,
+    "type": "simple",
+    "sku": "SKU-0002",
+    "images": [
+      {
+        "src": "https://d3fvqmu2193zmz.cloudfront.net/items_2/uid_commerces.1/uid_items_2.FDBRNURXO2WX/1500x1500/64594C4D5AB2D-Zapatilla-Running-Hombre-Run-Swift-3.webp"
+      }
+    ],
+    "status": "publish"
+  },
+  {
+    "id": 3,
+    "name": "Gorra Casual",
+    "description": "Gorra con diseño casual y ajuste cómodo.",
+    "regular_price": "15.00",
+    "stock_quantity": 30,
+    "type": "simple",
+    "sku": "SKU-0003",
+    "images": [
+      {
+        "src": "https://www.buffalo.com.pe/images/producto/gorra-casual-clothes710.jpg"
+      }
+    ],
+    "status": "draft"
+  },
+  {
+    "id": 4,
+    "name": "Polo Casual 1",
+    "description": "  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.",
+    "regular_price": "25.99",
+    "stock_quantity": 100,
+    "type": "variable",
+    "sku": "SKU-0004",
+    "categories": [
+      {
+        "id": 412
+      }
+    ],
+    "images": [
+      {
+        "src": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_4_front.jpg"
+      },
+      {
+        "src": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_4_back.jpg"
+      },
+      {
+        "src": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_3_front.jpg"
+      },
+      {
+        "src": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_3_back.jpg"
+      }
+    ],
+    "default_attributes": [
+      {
+        "name": "color",
+        "option": "Black"
+      },
+      {
+        "name": "size",
+        "option": "Small"
+      }
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "position": 0,
+        "visible": true,
+        "variation": true,
+        "options": ["Black", "Green", "Red"]
+      },
+      {
+        "name": "size",
+        "position": 0,
+        "visible": true,
+        "variation": true,
+        "options": ["Small", "Medium", "Large"]
+      }
+    ],
+    "variations": [
+      {
+        "regular_price": "29.99",
+        "image": {
+          "src": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_4_front.jpg"
+        },
+        "attributes": [
+          {
+            "name": "color",
+            "option": "Black"
+          },
+          {
+            "name": "size",
+            "option": "Small"
+          }
+        ]
+      },
+      {
+        "regular_price": "31.99",
+        "image": {
+          "src": "https://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_3_front.jpg"
+        },
+        "attributes": [
+          {
+            "name": "color",
+            "option": "Green"
+          },
+          {
+            "name": "size",
+            "option": "Medium"
+          }
+        ]
+      },
+      {
+        "regular_price": "32.99",
+        "image": {
+          "src": "https://rematexperu.com/cdn/shop/products/12_ff376886-e127-4bcd-b4b9-b385b6f0aaa8_750x.png"
+        },
+        "attributes": [
+          {
+            "name": "color",
+            "option": "Red"
+          },
+          {
+            "name": "size",
+            "option": "Large"
+          }
+        ]
+      }
+    ],
+    "status": "draft"
+  },
+  {
+    "id": 5,
+    "name": "Camiseta Deportiva",
+    "description": "Camiseta de poliéster ideal para entrenamientos.",
+    "regular_price": "25.99",
+    "stock_quantity": 101,
+    "type": "simple",
+    "sku": "SKU-0001",
+    "categories": [
+      {
+        "id": 412
+      }
+    ],
+    "images": [
+      {
+        "src": "https://texsamex.pe/wp-content/uploads/2021/11/8-1.png"
+      }
+    ],
+    "status": "publish"
+  },
+  {
+    "id": 6,
+    "name": "CB125F TWISTER",
+    "description": "Diseñada para el transporte diario en la ciudad. Su versatilidad, economía y excelente maniobrabilidad, la convierten en una pistera imparable que te llevara a tu destino, siempre a tiempo.",
+    "regular_price": "1744",
+    "type": "variable",
+    "sku": "SKU-0008",
+    "categories": [
+      {
+        "id": 214
+      }
+    ],
+    "images": [
+      {
+        "src": "https://honda.sorsa.pe/wp-content/uploads/2024/10/FOTO-PRO-e1735926138693.png"
+      }
+    ],
+    "default_attributes": [
+      {
+        "name": "color",
+        "option": "Black"
+      }
+    ],
+    "attributes": [
+      {
+        "name": "color",
+        "position": 0,
+        "visible": true,
+        "variation": true,
+        "options": ["Black", "Red"]
+      }
+    ],
+    "variations": [
+      {
+        "regular_price": "1500",
+        "stock_quantity": 10,
+        "image": {
+          "src": "https://honda.sorsa.pe/wp-content/uploads/2024/10/FOTO-PRO-e1735926138693.png"
+        },
+        "attributes": [
+          {
+            "name": "color",
+            "option": "Black"
+          }
+        ]
+      },
+      {
+        "regular_price": "1500",
+        "stock_status": "outofstock",
+        "image": {
+          "src": "https://honda.sorsa.pe/wp-content/uploads/2024/10/3.png"
+        },
+        "attributes": [
+          {
+            "name": "color",
+            "option": "Red"
+          }
+        ]
+      }
+    ],
+    "status": "publish"
+  }
+]
