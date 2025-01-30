@@ -235,50 +235,6 @@ function image_exists_by_url($image_url)
   return $wpdb->get_var($query);
 }
 
-/*
-function upload_image_from_url($url)
-{
-  // Descargar la imagen temporalmente
-  $tmp = download_url($url);
-
-  // Si hay un error en la descarga, retornar null
-  if (is_wp_error($tmp))
-    return null;
-
-  $file = [
-    'name' => basename($url), // Nombre del archivo con extension
-    'type' => mime_content_type($tmp), // Tipo MIME del archivo
-    'tmp_name' => $tmp, // Ruta temporal del archivo
-    'error' => 0, // Código de error
-    'size' => filesize($tmp), // Tamaño del archivo
-  ];
-
-  // Subimos la imagen a WordPress wp-content/uploads/2025/01
-  // 'test_form' => false , no valida formulario ya que llamamos de una API
-  $upload = wp_handle_sideload($file, ['test_form' => false]);
-
-  // Si hay un error en la subida, retornar null
-  if (isset($upload['error']))
-    return null;
-
-  // Un array de metadatos con detalles del archivo para que WordPress lo registre correctamente en su base de datos como un archivo adjunto.
-  $attachment = [
-    'post_mime_type' => $upload['type'],
-    'post_title' => pathinfo($upload['file'], PATHINFO_FILENAME),
-    'post_content' => '',
-    'post_status' => 'inherit',
-  ];
-
-  // Insertar la imagen en la biblioteca de medios(ya se registra en la BD)
-  $attach_id = wp_insert_attachment($attachment, $upload['file']);
-  // Actualizar los metadatos de la imagen
-  require_once(ABSPATH . 'wp-admin/includes/image.php');
-  wp_update_attachment_metadata($attach_id, wp_generate_attachment_metadata($attach_id, $upload['file']));
-
-  // Retornar el ID de la imagen
-  return $attach_id;
-}
-*/
 function upload_image_from_url($url)
 {
   // Descargar la imagen temporalmente
