@@ -29,20 +29,56 @@ function aster_import_menu()
 
 function aster_import_page()
 {
-  if (!current_user_can('manage_options')) {
+  if (!current_user_can('manage_options'))
     return;
-  }
+
+  // Loader oculto por defecto
+  echo '<div id="aster-loader" style="display:none; text-align:center; margin-top:10px;">
+      <img src="' . plugin_dir_url(__FILE__) . 'assets/img/loader.gif" alt="Cargando..." width="50">
+      <p>Cargando productos...</p>
+    </div>';
 
   echo '<div class="wrap"><h1>' . __('Importar Productos desde JSON', 'jc-woocommerce-api') . '</h1>';
   echo '<p>' . __('Haz clic en el botón para importar los productos desde el JSON.', 'jc-woocommerce-api') . '</p>';
-  echo '<form method="post" action="">';
+
+  // echo '<form id="aster-import-form" method="post" action="">';
+  echo '<form id="aster-import-form">';
   wp_nonce_field('aster_import_action', 'aster_import_nonce');
-  echo '<input type="submit" name="aster_import" class="button-primary" value="' . __('Importar Productos', 'jc-woocommerce-api') . '">';
+  echo '<input type="submit" name="aster_import" class="button-primary" id="aster-import-btn" value="' . __('Importar Productos', 'jc-woocommerce-api') . '">';
   echo '</form></div>';
 
-  if (isset($_POST['aster_import']) && check_admin_referer('aster_import_action', 'aster_import_nonce')) {
-    aster_import_products();
-  }
+  // if (isset($_POST['aster_import']) && check_admin_referer('aster_import_action', 'aster_import_nonce'))
+  //   aster_import_products();
+}
+
+add_action('admin_enqueue_scripts', 'aster_enqueue_admin_scripts');
+function aster_enqueue_admin_scripts($hook)
+{
+  // toplevel_page_{slug}
+  // el slug es el nombre del plugin "aster-product-import"
+  if ($hook !== 'toplevel_page_aster-product-import')
+    return;
+
+  // Agregamos
+  wp_enqueue_style('aster-admin-style', plugin_dir_url(__FILE__) . 'assets/css/admin-style.css');
+  wp_enqueue_script('aster-admin-js', plugin_dir_url(__FILE__) . 'assets/js/admin.js', [], '1.0', true);
+  // Enviamos por ajax
+  wp_localize_script('aster-admin-js', 'aster_ajax', [
+    'security' => wp_create_nonce('aster_import_nonce')
+  ]);
+}
+
+add_action('wp_ajax_aster_import_products_ajax', 'aster_import_products_ajax');
+
+function aster_import_products_ajax()
+{
+  check_ajax_referer('aster_import_nonce', 'security'); // Verifica el nonce de seguridad
+
+  ob_start(); // Captura la salida de `aster_import_products()`
+  aster_import_products();
+  $response = ob_get_clean();
+
+  wp_send_json_success($response); // Devuelve la respuesta sin recargar la página
 }
 
 function aster_import_products()
@@ -151,6 +187,7 @@ function prepare_product_data($producto)
     'type' => $producto['type'] ?? 'simple',
     'regular_price' => $producto['type'] === 'simple' && $has_regular_price ? $producto['regular_price'] : '',
     'description' => $producto['description'] ?? '',
+    'short_description' => $producto['short_description'] ?? '',
     'sku' => $producto['sku'],
     'stock_quantity' => $has_stock_quantity ? $producto['stock_quantity'] : null,
     // true: woo controla el stock, false: no controla el stock
@@ -163,7 +200,7 @@ function prepare_product_data($producto)
     'catalog_visibility' => $producto['catalog_visibility'] ?? "visible", // Agregar visibilidad
     // Agregar estado de stock "hay existencias" "sin existencias"
     // El manage_stock debe ser false para que esto funcione
-    // Si no le mando sotck_quantity, entonces el stock_status es "instock" por defecto
+    // Si no le mando stock_quantity, entonces el stock_status es "instock" por defecto
     'stock_status' => $producto['stock_status'] ?? 'instock',
   ];
   return $data;
@@ -289,9 +326,6 @@ function upload_image_from_url($url)
   return $attach_id;
 }
 
-
-
-
 function process_variations($woocommerce, $product_id, $producto)
 {
   // Verificamos si el producto es variable
@@ -301,13 +335,12 @@ function process_variations($woocommerce, $product_id, $producto)
     // Obtener variaciones existentes del producto
     // Array de stdClass Object || de no tener un array vacio
     $existing_variations = $woocommerce->get("products/$product_id/variations");
-    echo "<pre>";
-    print_r($existing_variations);
-    echo "</pre>";
+    // echo "<pre>";
+    // print_r($existing_variations);
+    // echo "</pre>";
     foreach ($producto['variations'] as $variation) {
       // Preparamos los datos de la variación
       $variation_data = prepare_variation_data($variation);
-
 
       // Verificar si la variación ya existe
       $existing_variation_id = null;
