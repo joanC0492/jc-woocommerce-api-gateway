@@ -38,8 +38,8 @@ function aster_import_page()
       <p>Cargando productos...</p>
     </div>';
 
-  echo '<div class="wrap"><h1>' . __('Importar Productos desde JSON', 'jc-woocommerce-api') . '</h1>';
-  echo '<p>' . __('Haz clic en el botón para importar los productos desde el JSON.', 'jc-woocommerce-api') . '</p>';
+  echo '<div class="wrap"><h1>' . __('Importar productos desde el ASTER', 'jc-woocommerce-api') . '</h1>';
+  echo '<p>' . __('Haz clic en el botón para importar los productos.', 'jc-woocommerce-api') . '</p>';
 
   // echo '<form id="aster-import-form" method="post" action="">';
   echo '<form id="aster-import-form">';
@@ -102,14 +102,14 @@ function aster_import_products()
     $response = wp_remote_get($json_url);
 
     if (is_wp_error($response)) {
-      echo '<div class="notice notice-error"><p>' . __('Error al obtener los productos: ', 'jc-woocommerce-api') . $response->get_error_message() . '</p></div>';
+      echo '<div class="d-block notice notice-error"><p>' . __('Error al obtener los productos: ', 'jc-woocommerce-api') . $response->get_error_message() . '</p></div>';
       return;
     }
 
     $productos = json_decode(wp_remote_retrieve_body($response), true);
 
     if (!is_array($productos)) {
-      echo '<div class="notice notice-error"><p>' . __('Respuesta del JSON no válida.', 'jc-woocommerce-api') . '</p></div>';
+      echo '<div class="d-block notice notice-error"><p>' . __('Respuesta del JSON no válida.', 'jc-woocommerce-api') . '</p></div>';
       return;
     }
 
@@ -118,9 +118,9 @@ function aster_import_products()
     foreach ($productos as $producto)
       process_product_batch($woocommerce, $producto, $processed);
 
-    echo '<div class="notice notice-success"><p>' . __('Importación completada.', 'jc-woocommerce-api') . '</p></div>';
+    echo '<div class="d-block notice notice-success"><p>' . __('Importación completada.', 'jc-woocommerce-api') . '</p></div>';
   } catch (Exception $e) {
-    echo '<div class="notice notice-error"><p>' . __('Error fatal en la importación: ', 'jc-woocommerce-api') . $e->getMessage() . '</p></div>';
+    echo '<div class="d-block notice notice-error"><p>' . __('Error fatal en la importación: ', 'jc-woocommerce-api') . $e->getMessage() . '</p></div>';
   }
 }
 
@@ -150,7 +150,7 @@ function validate_product_data($producto, &$processed)
 
   // Está vacío
   if (empty($sku)) {
-    echo '<div class="notice notice-warning"><p>' . sprintf(
+    echo '<div class="d-block notice notice-warning"><p>' . sprintf(
       __('Producto omitido (%s): El producto no tiene un SKU válido.', 'jc-woocommerce-api'),
       $producto['name'] ?? 'Sin nombre'
     ) . '</p></div>';
@@ -159,7 +159,7 @@ function validate_product_data($producto, &$processed)
 
   // Verificamos si el SKU ya fue procesado
   if (in_array($sku, $processed)) {
-    echo '<div class="notice notice-warning"><p>' . sprintf(
+    echo '<div class="d-block notice notice-warning"><p>' . sprintf(
       __('Producto omitido (%s): El SKU "%s" ya fue procesado en este lote.', 'jc-woocommerce-api'),
       $producto['name'] ?? 'Sin nombre',
       $sku
@@ -359,7 +359,7 @@ function process_variations($woocommerce, $product_id, $producto)
         if ($existing_variation_id) {
           // ACTUALIZAR VARIACIÓN
           $woocommerce->put("products/$product_id/variations/$existing_variation_id", $variation_data);
-          echo '<div class="notice notice-info"><p>' . sprintf(
+          echo '<div class="d-block notice notice-info"><p>' . sprintf(
             __('-- Variación actualizada para el producto "%s": %s', 'jc-woocommerce-api'),
             $producto['name'] ?? 'Sin nombre',
             json_encode($variation['attributes'])
@@ -367,14 +367,14 @@ function process_variations($woocommerce, $product_id, $producto)
         } else {
           // CREAR VARIACIÓN 
           $woocommerce->post("products/$product_id/variations", $variation_data);
-          echo '<div class="notice notice-success"><p>' . sprintf(
+          echo '<div class="d-block notice notice-success"><p>' . sprintf(
             __('-- Nueva variación creada para el producto "%s": %s', 'jc-woocommerce-api'),
             $producto['name'] ?? 'Sin nombre',
             json_encode($variation['attributes'])
           ) . '</p></div>';
         }
       } catch (Exception $e) {
-        echo '<div class="notice notice-error"><p>' . sprintf(
+        echo '<div class="d-block notice notice-error"><p>' . sprintf(
           __('Error al crear la variación del producto "%s": %s', 'jc-woocommerce-api'),
           $producto['name'] ?? 'Sin nombre',
           $e->getMessage()
@@ -431,18 +431,18 @@ function create_or_update_product($woocommerce, $data, $producto)
       // Actualizar producto en WooCommerce
       $woocommerce->put("products/$product_id", $data);
 
-      echo '<div class="notice notice-info"><p>' . sprintf(__('Producto actualizado: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
+      echo '<div class="d-block notice notice-info"><p>' . sprintf(__('Producto actualizado: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
     } else {
       // CREAR PRODUCTO
       $response = $woocommerce->post('products', $data);
       $product_id = $response->id; // Obtenemos el ID del producto importado
 
-      echo '<div class="notice notice-success"><p>' . sprintf(__('Producto importado: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
+      echo '<div class="d-block notice notice-success"><p>' . sprintf(__('Producto importado: %s', 'jc-woocommerce-api'), $producto['name']) . '</p></div>';
     }
     // Retornamos el ID del producto
     return $product_id;
   } catch (Exception $e) {
-    echo '<div class="notice notice-error"><p>' . sprintf(__('Error al importar el producto: %s', 'jc-woocommerce-api'), $e->getMessage()) . '</p></div>';
+    echo '<div class="d-block notice notice-error"><p>' . sprintf(__('Error al importar el producto: %s', 'jc-woocommerce-api'), $e->getMessage()) . '</p></div>';
     return null;
   }
 }

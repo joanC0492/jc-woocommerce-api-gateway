@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   // display: flex;
   justify-content: center;
   align-items: center;
@@ -14,12 +14,20 @@
     width: 100px;
     height: 100px;
   }
+  p {
+    color: #fff;
+    font-size: 18px;
+  }
 }
 
 #wpbody-content {
   > .wrap {
-    > .notice {
+    > .notice:not(.d-block) {
       display: none !important;
     }
   }
+}
+
+.mt-4 {
+  margin-top: 1.5rem !important;
 }
